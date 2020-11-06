@@ -1,4 +1,4 @@
-#include "comparer.h"
+#include "comparer_lib.h"
 
 long long int actual_file_size(FILE *file) {
     long long int size_file = 0;

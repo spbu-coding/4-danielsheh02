@@ -1,5 +1,4 @@
-#include "comparer_lib.h"
-#include "comparer.c"
+#include "comparer_func.c"
 
 int main(int argc, char **argv) {
     enum ERROR_BLOCK type_of_error = NO_ERROR;
