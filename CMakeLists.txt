@@ -3,8 +3,8 @@ project(tests LANGUAGES C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(converter src/converter.c src/<other files>)
-add_executable(comparer src/comparer.c src/<other files>)
+add_executable(converter src/converter.c src/converter_func.c src/converter_lib.h src/negative.c src/qdbmp.c src/qdbmp.h)
+add_executable(comparer src/comparer.c src/comparer_func.c src/comparer_lib.h)
 
 if(MSVC)
   target_compile_options(converter PRIVATE /W4 /WX)
