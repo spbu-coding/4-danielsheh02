@@ -1,4 +1,4 @@
-#include "converter_func.c"
+#include "converter_lib.h"
 #include "negative.c"
 
 int main(int argc, char **argv) {

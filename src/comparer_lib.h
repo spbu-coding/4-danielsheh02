@@ -49,4 +49,7 @@ typedef struct image {
     int *color_table;
     int **array_of_pixels;
 } IMAGE;
+
+int start_comparer(char *name_file, char *name_file2, enum ERROR_BLOCK *type_of_error);
+
 #endif

@@ -51,4 +51,7 @@ typedef struct image {
     int *color_table;
     int *array_of_rgb_pixels;
 } IMAGE;
+
+int mine_implementation(char *name_in_put, char *name_ot_put, enum ERROR_BLOCK *type_of_error);
+
 #endif
