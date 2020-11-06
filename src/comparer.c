@@ -1,3 +1,4 @@
+#include "comparer_lib.h"
 #include "comparer.c"
 
 int main(int argc, char **argv) {
