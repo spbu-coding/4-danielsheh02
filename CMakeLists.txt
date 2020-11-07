@@ -3,6 +3,6 @@ project(tests LANGUAGES C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(converter src/converter.c src/converter_func.c )
-add_executable(comparer src/comparer.c src/comparer_func.c)
+add_executable(converter src/converter/converter.c src/converter/converter_func.c )
+add_executable(comparer src/comparer/comparer.c src/comparer/comparer_func.c)
 
