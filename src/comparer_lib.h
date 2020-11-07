@@ -23,6 +23,7 @@ enum ERROR_BLOCK {
     TABLE_COLOR_ERROR2,
     TABLE_COLOR_ERROR3,
     TABLE_COLOR_ERROR4,
+    TABLE_COLOR_ERROR5
 };
 
 typedef struct image_bitmap_info_header {

@@ -249,6 +249,16 @@ void comparer_pixels(IMAGE *image, IMAGE *image2) {
     }
 }
 
+int comparer_table(IMAGE *image, IMAGE *image2, enum ERROR_BLOCK *type_of_error) {
+    for (long long int i = 0; i < image->meta_data_header->number_of_colors; i++) {
+        if (image->color_table[i] != image2->color_table[i]) {
+            *type_of_error = TABLE_COLOR_ERROR5;
+            return -1;
+        }
+    }
+    return 0;
+}
+
 int start_comparer(char *name_file, char *name_file2, enum ERROR_BLOCK *type_of_error) {
     FILE *file;
     FILE *file2;
@@ -309,7 +319,15 @@ int start_comparer(char *name_file, char *name_file2, enum ERROR_BLOCK *type_of_
         fclose(file2);
         return -1;
     } else {
-        comparer_pixels(image, image2);
+        if (!comparer_table(image, image2, type_of_error)) {
+            comparer_pixels(image, image2);
+        } else {
+            free_image(image);
+            fclose(file);
+            free_image(image2);
+            fclose(file2);
+            return -1;
+        }
     }
     free_image(image);
     fclose(file);

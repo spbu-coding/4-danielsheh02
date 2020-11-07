@@ -55,6 +55,10 @@ int main(int argc, char **argv) {
             fprintf(stdout,
                     "Error color table. According to the metadata, the number of important colors value over 256, but 8 bits per pixel images always use no more 256 of important colors in the table.");
             return -2;
+        } else if (type_of_error == TABLE_COLOR_ERROR5) {
+            fprintf(stdout,
+                    "Error color table. Color tables do not match.");
+            return -2;
         } else {
             return -1;
         }
