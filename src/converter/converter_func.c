@@ -8,11 +8,12 @@ long long int actual_file_size(FILE *file) {
     return size_file;
 }
 
-IMAGE_BITMAP_INFO_HEADER *decoding_image_bitmap_info_header(FILE *file, enum ERROR_BLOCK *type_of_error) {
+IMAGE_BITMAP_INFO_HEADER *decode_image_bitmap_info_header(FILE *file, enum ERROR_BLOCK *type_of_error) {
     long long int size_file = actual_file_size(file);
     IMAGE_BITMAP_INFO_HEADER *image_bitmap_info_header = malloc(sizeof(IMAGE_BITMAP_INFO_HEADER));
     if (!image_bitmap_info_header) {
         fprintf(stdout, "Cannot allocate memory for results string in all experiment\n");
+        *type_of_error = MEMORY_ERROR;
         return NULL;
     }
     image_bitmap_info_header->format = 0;
@@ -122,12 +123,13 @@ IMAGE_BITMAP_INFO_HEADER *decoding_image_bitmap_info_header(FILE *file, enum ERR
     return image_bitmap_info_header;
 }
 
-int *decoding_image_pixels(FILE *file, int width, int height, int bits_per_pixel) {
+int *decode_image_pixels(FILE *file, int width, int height, int bits_per_pixel, enum ERROR_BLOCK *type_of_error) {
     int bytes_per_pixel = bits_per_pixel / 8;
     height = abs(height);
     int *array_image_pixels = malloc(sizeof(int) * width * height * bytes_per_pixel);
     if (!array_image_pixels) {
         fprintf(stdout, "Cannot allocate memory for results string in all experiment\n");
+        *type_of_error = MEMORY_ERROR;
         return 0;
     }
     for (long long int i = 0; i < width * height * bytes_per_pixel; i++) {
@@ -137,11 +139,12 @@ int *decoding_image_pixels(FILE *file, int width, int height, int bits_per_pixel
     return array_image_pixels;
 }
 
-int *decoding_image_color_table(FILE *file, int number_of_colors) {
+int *decode_image_color_table(FILE *file, int number_of_colors, enum ERROR_BLOCK *type_of_error) {
     int size_table_colors = number_of_colors * BYTES_COLOR_TABLE;
     int *array_table_colors = malloc(sizeof(int) * size_table_colors);
     if (!array_table_colors) {
         fprintf(stdout, "Cannot allocate memory for results string in all experiment\n");
+        *type_of_error = MEMORY_ERROR;
         return 0;
     }
     for (long long int i = 0; i < size_table_colors; i++) {
@@ -151,27 +154,28 @@ int *decoding_image_color_table(FILE *file, int number_of_colors) {
     return array_table_colors;
 }
 
-IMAGE *decoding_image(FILE *file, enum ERROR_BLOCK *type_of_error) {
+IMAGE *decode_image(FILE *file, enum ERROR_BLOCK *type_of_error) {
     IMAGE *image = calloc(1, sizeof(IMAGE));
     if (!image) {
         fprintf(stdout, "Cannot allocate memory for results string in all experiment\n");
+        *type_of_error = MEMORY_ERROR;
         return NULL;
     }
-    image->meta_data_header = decoding_image_bitmap_info_header(file, type_of_error);
+    image->meta_data_header = decode_image_bitmap_info_header(file, type_of_error);
     if (!image->meta_data_header) {
         free(image);
         return NULL;
     }
     if (image->meta_data_header->number_of_colors != 0 && image->meta_data_header->bits_per_pixel == 8) {
-        image->color_table = decoding_image_color_table(file, image->meta_data_header->number_of_colors);
+        image->color_table = decode_image_color_table(file, image->meta_data_header->number_of_colors, type_of_error);
         if (!image->color_table) {
             free(image);
             return NULL;
         }
     }
-    image->array_of_rgb_pixels = decoding_image_pixels(file, image->meta_data_header->width,
+    image->array_of_rgb_pixels = decode_image_pixels(file, image->meta_data_header->width,
                                                        image->meta_data_header->height,
-                                                       image->meta_data_header->bits_per_pixel);
+                                                       image->meta_data_header->bits_per_pixel, type_of_error);
 
     if (!image->array_of_rgb_pixels) {
         free(image);
@@ -246,10 +250,11 @@ void free_image(IMAGE *image) {
 int mine_implementation(char *name_in_put, char *name_ot_put, enum ERROR_BLOCK *type_of_error) {
     FILE *file;
     if ((file = fopen(name_in_put, "rb")) == NULL) {
-        fprintf(stdout, "Cannot open file. No file with name %s exists.", name_in_put);
+        fprintf(stdout, "Cannot open file. No file with name %s exists.\n", name_in_put);
+        *type_of_error = OPEN_FILE_ERROR;
         return -1;
     }
-    IMAGE *image = decoding_image(file, type_of_error);
+    IMAGE *image = decode_image(file, type_of_error);
     if (!image) {
         fclose(file);
         return -1;
