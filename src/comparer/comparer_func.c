@@ -16,76 +16,66 @@ IMAGE_BITMAP_INFO_HEADER *decode_image_bitmap_info_header(FILE *file, enum ERROR
         *type_of_error = MEMORY_ERROR;
         return NULL;
     }
-    image_bitmap_info_header->format = 0;
-    image_bitmap_info_header->size_file = 0;
-    image_bitmap_info_header->reserved1 = 0;
-    image_bitmap_info_header->reserved2 = 0;
-    image_bitmap_info_header->pixel_array_off_set = 0;
-    image_bitmap_info_header->version_header = 0;
-    image_bitmap_info_header->width = 0;
-    image_bitmap_info_header->height = 0;
-    image_bitmap_info_header->planes = 0;
-    image_bitmap_info_header->bits_per_pixel = 0;
-    image_bitmap_info_header->compression = 0;
-    image_bitmap_info_header->size_pixels_file = 0;
-    fread(&image_bitmap_info_header->format, sizeof(image_bitmap_info_header->format), 1, file);
+    char buffer[SIZE_OF_HEADER];
+    fread(buffer, SIZE_OF_HEADER, 1, file);
+    *image_bitmap_info_header = (IMAGE_BITMAP_INFO_HEADER) {0};
+    image_bitmap_info_header->format = *(short *) (buffer + 0);
     if (image_bitmap_info_header->format != 0x4D42) {
         *type_of_error = FORMAT_ERROR;
         free(image_bitmap_info_header);
         return NULL;
     }
-    fread(&image_bitmap_info_header->size_file, sizeof(image_bitmap_info_header->size_file), 1, file);
+    image_bitmap_info_header->size_file = *(int *) (buffer + 2);
     if (size_file != image_bitmap_info_header->size_file) {
         *type_of_error = SIZE_ERROR;
         free(image_bitmap_info_header);
         return NULL;
     }
-    fread(&image_bitmap_info_header->reserved1, sizeof(image_bitmap_info_header->reserved1), 1, file);
-    fread(&image_bitmap_info_header->reserved2, sizeof(image_bitmap_info_header->reserved2), 1, file);
+    image_bitmap_info_header->reserved1 = *(short *) (buffer + 6);
+    image_bitmap_info_header->reserved2 = *(short *) (buffer + 8);
     if (image_bitmap_info_header->reserved1 != 0 || image_bitmap_info_header->reserved2 != 0) {
         *type_of_error = RESERVED_ERROR;
         free(image_bitmap_info_header);
         return NULL;
     }
-    fread(&image_bitmap_info_header->pixel_array_off_set, sizeof(image_bitmap_info_header->pixel_array_off_set), 1,
-          file);
-    fread(&image_bitmap_info_header->version_header, sizeof(image_bitmap_info_header->version_header), 1, file);
+    image_bitmap_info_header->pixel_array_off_set = *(int *) (buffer + 10);
+    image_bitmap_info_header->version_header = *(int *) (buffer + 14);
     if (image_bitmap_info_header->version_header != 40) {
         *type_of_error = VERSION_ERROR;
         free(image_bitmap_info_header);
         return NULL;
     }
-    fread(&image_bitmap_info_header->width, sizeof(image_bitmap_info_header->width), 1, file);
+    image_bitmap_info_header->width = *(int *) (buffer + 18);
     if (image_bitmap_info_header->width <= 0) {
         *type_of_error = WIDTH_ERROR;
         free(image_bitmap_info_header);
         return NULL;
     }
-    fread(&image_bitmap_info_header->height, sizeof(image_bitmap_info_header->height), 1, file);
+    image_bitmap_info_header->height = *(int *) (buffer + 22);
     if (image_bitmap_info_header->height == 0) {
         *type_of_error = HEIGHT_ERROR;
         free(image_bitmap_info_header);
         return NULL;
     }
-    fread(&image_bitmap_info_header->planes, sizeof(image_bitmap_info_header->planes), 1, file);
+    image_bitmap_info_header->planes = *(short *) (buffer + 26);
     if (image_bitmap_info_header->planes != 1) {
         *type_of_error = PLANES_ERROR;
         free(image_bitmap_info_header);
         return NULL;
     }
-    fread(&image_bitmap_info_header->bits_per_pixel, sizeof(image_bitmap_info_header->bits_per_pixel), 1, file);
+    image_bitmap_info_header->bits_per_pixel = *(short *) (buffer + 28);
     if ((image_bitmap_info_header->bits_per_pixel != 8) && (image_bitmap_info_header->bits_per_pixel != 24)) {
         *type_of_error = BITS_PER_PIXEL_ERROR;
         free(image_bitmap_info_header);
         return NULL;
     }
-    fread(&image_bitmap_info_header->compression, sizeof(image_bitmap_info_header->compression), 1, file);
+    image_bitmap_info_header->compression = *(int *) (buffer + 30);
     if (image_bitmap_info_header->compression != 0) {
         *type_of_error = COMPRESSION_ERROR;
         free(image_bitmap_info_header);
         return NULL;
     }
-    fread(&image_bitmap_info_header->size_pixels_file, sizeof(image_bitmap_info_header->size_pixels_file), 1, file);
+    image_bitmap_info_header->size_pixels_file = *(int *) (buffer + 34);
     if (image_bitmap_info_header->size_pixels_file != 0) {
         int size_only_pixels = image_bitmap_info_header->size_file - image_bitmap_info_header->pixel_array_off_set;
         if (image_bitmap_info_header->size_pixels_file != size_only_pixels) {
@@ -94,9 +84,9 @@ IMAGE_BITMAP_INFO_HEADER *decode_image_bitmap_info_header(FILE *file, enum ERROR
             return NULL;
         }
     }
-    fread(&image_bitmap_info_header->hor_res_image, sizeof(image_bitmap_info_header->hor_res_image), 1, file);
-    fread(&image_bitmap_info_header->ver_res_image, sizeof(image_bitmap_info_header->ver_res_image), 1, file);
-    fread(&image_bitmap_info_header->number_of_colors, sizeof(image_bitmap_info_header->number_of_colors), 1, file);
+    image_bitmap_info_header->hor_res_image = *(int *) (buffer + 38);
+    image_bitmap_info_header->ver_res_image = *(int *) (buffer + 42);
+    image_bitmap_info_header->number_of_colors = *(int *) (buffer + 46);
     if (image_bitmap_info_header->number_of_colors == 0 && image_bitmap_info_header->bits_per_pixel == 8) {
         *type_of_error = TABLE_COLOR_ERROR1;
         free(image_bitmap_info_header);
@@ -112,14 +102,12 @@ IMAGE_BITMAP_INFO_HEADER *decode_image_bitmap_info_header(FILE *file, enum ERROR
         free(image_bitmap_info_header);
         return NULL;
     }
-    fread(&image_bitmap_info_header->number_of_important_colors,
-          sizeof(image_bitmap_info_header->number_of_important_colors), 1, file);
+    image_bitmap_info_header->ver_res_image = *(int *) (buffer + 50);
     if (image_bitmap_info_header->number_of_important_colors > 256 && image_bitmap_info_header->bits_per_pixel == 8) {
         *type_of_error = TABLE_COLOR_ERROR4;
         free(image_bitmap_info_header);
         return NULL;
     }
-
     return image_bitmap_info_header;
 }
 
@@ -188,8 +176,8 @@ IMAGE *decode_image(FILE *file, enum ERROR_BLOCK *type_of_error) {
         }
     }
     image->array_of_pixels = decode_image_pixels(file, image->meta_data_header->width,
-                                                   image->meta_data_header->height,
-                                                   image->meta_data_header->bits_per_pixel, type_of_error);
+                                                 image->meta_data_header->height,
+                                                 image->meta_data_header->bits_per_pixel, type_of_error);
 
     if (!image->array_of_pixels) {
         free(image);
@@ -211,46 +199,24 @@ void free_image(IMAGE *image) {
 
 void comparer_pixels(IMAGE *image, IMAGE *image2) {
     int count = 0;
-    if (image->meta_data_header->height > 0 && image2->meta_data_header->height > 0) {
-        for (long long int i = 0; i < image->meta_data_header->height; i++) {
-            for (long long int j = 0; j < image->meta_data_header->width; j++) {
-                if (count < 100 && image->array_of_pixels[i][j] != image2->array_of_pixels[i][j]) {
-                    if (image->meta_data_header->height > 0 && image2->meta_data_header->height > 0) {
-                        fprintf(stderr, "X coordinate: %lld Y coordinate: %lld \n", j, i);
-                    }
-                    count++;
+    int image_height1 = image->meta_data_header->height, image_height2 = image2->meta_data_header->height;
+    int image_width = image->meta_data_header->width;
+    int height_abs = abs(image_height1);
+    for (long long int i = 0; i < height_abs; i++) {
+        for (long long int j = 0; j < image_width; j++) {
+            long long int i_real1 = image_height1 > 0 ? i : -image_height1 - i - 1;
+            long long int i_real2 = image_height2 > 0 ? i : -image_height2 - i - 1;
+            if (image->array_of_pixels[i_real1][j] !=
+                image2->array_of_pixels[i_real2][j]) {
+                fprintf(stderr, "X coordinate: %lld Y coordinate: %lld \n", j, i);
+                count++;
+                if (count > 100) {
+                    break;
                 }
             }
         }
-    } else if (image->meta_data_header->height < 0 && image2->meta_data_header->height < 0) {
-        for (long long int i = 0; i < abs(image->meta_data_header->height); i++) {
-            for (long long int j = 0; j < image->meta_data_header->width; j++) {
-                if (count < 100 && image->array_of_pixels[abs(image->meta_data_header->height) - i - 1][j] !=
-                                   image2->array_of_pixels[abs(image2->meta_data_header->height) - i - 1][j]) {
-                    fprintf(stderr, "X coordinate: %lld Y coordinate: %lld \n", j, i);
-                    count++;
-                }
-            }
-        }
-    } else if (image->meta_data_header->height > 0 && image2->meta_data_header->height < 0) {
-        for (long long int i = 0; i < image->meta_data_header->height; i++) {
-            for (long long int j = 0; j < image->meta_data_header->width; j++) {
-                if (count < 100 && image->array_of_pixels[i][j] !=
-                                   image2->array_of_pixels[abs(image2->meta_data_header->height) - i - 1][j]) {
-                    fprintf(stderr, "X coordinate: %lld Y coordinate: %lld \n", j, i);
-                    count++;
-                }
-            }
-        }
-    } else if (image->meta_data_header->height < 0 && image2->meta_data_header->height > 0) {
-        for (long long int i = 0; i < image2->meta_data_header->height; i++) {
-            for (long long int j = 0; j < image->meta_data_header->width; j++) {
-                if (count < 100 && image->array_of_pixels[abs(image->meta_data_header->height) - i - 1][j] !=
-                                   image2->array_of_pixels[i][j]) {
-                    fprintf(stderr, "X coordinate: %lld Y coordinate: %lld \n", j, i);
-                    count++;
-                }
-            }
+        if (count > 100) {
+            break;
         }
     }
 }
@@ -270,7 +236,7 @@ int start_comparer(char *name_file, char *name_file2, enum ERROR_BLOCK *type_of_
     FILE *file2;
     if ((file = fopen(name_file, "rb")) == NULL) {
         fprintf(stdout, "Cannot open file. No file with name %s exists. ", name_file);
-        *type_of_error=OPEN_FILE_ERROR;
+        *type_of_error = OPEN_FILE_ERROR;
         return -1;
     }
     IMAGE *image = decode_image(file, type_of_error);
@@ -281,7 +247,7 @@ int start_comparer(char *name_file, char *name_file2, enum ERROR_BLOCK *type_of_
     }
     if ((file2 = fopen(name_file2, "rb")) == NULL) {
         fprintf(stdout, "Cannot open file. No file with name %s exists. ", name_file2);
-        *type_of_error=OPEN_FILE_ERROR;
+        *type_of_error = OPEN_FILE_ERROR;
         return -1;
     }
     IMAGE *image2 = decode_image(file2, type_of_error);

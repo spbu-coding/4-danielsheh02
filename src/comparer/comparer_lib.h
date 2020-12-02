@@ -6,6 +6,7 @@
 #include <string.h>
 
 #define BYTES_COLOR_TABLE 4
+#define SIZE_OF_HEADER 54
 
 enum ERROR_BLOCK {
     NO_ERROR,
